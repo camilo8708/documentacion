@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutantController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mutant-api</a> &gt; <a href="index.source.html" class="el_package">co.com.meli.mutant.mutantapi.controller</a> &gt; <span class="el_source">MutantController.java</span></div><h1>MutantController.java</h1><pre class="source lang-java linenums">package co.com.meli.mutant.mutantapi.controller;
+
+import co.com.meli.mutant.mutantapi.payload.MutantValidateRequest;
+import co.com.meli.mutant.mutantapi.payload.MutantStatResponse;
+import co.com.meli.mutant.mutantapi.payload.MutantValidateResponse;
+import co.com.meli.mutant.mutantapi.service.MutantService;
+import io.swagger.annotations.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+
+/**
+ * Controlador para exponer los servicios Rest para validar la cadena de ADN y para
+ * consultar el porcentaje de mutantes sobre humanos
+ */
+@RestController
+<span class="fc" id="L21">public class MutantController {</span>
+
+    @Autowired
+    MutantService mutantService;
+
+    /**
+     * Servicio Rest para validar si una cadena de ADN es de un mutante o un humano
+     * @param dna Lista de caracteres de ADN que se va a validar.
+     * @return El servicio responde un código http 200 si la cadena de ADN corresponde a un mutante
+     * Responde un código http 403 si la cadena no corresponde a un mutante y
+     * Responde 400 si existe error en la estructura enviada
+     */
+    @ApiOperation(value = &quot;Servicio para validar una cadena de ADN y determinar si es de un mutante o no&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = &quot;El ADN Validado es de un mutante&quot;),
+            @ApiResponse(code = 400, message = &quot;La cadena de ADN no cumple los requisitos de tamaño y valores&quot;),
+            @ApiResponse(code = 403, message = &quot;El ADN Validado No es de un mutante&quot;)
+    })
+    @PostMapping(value = &quot;${mutant.validate.url}&quot;, consumes = &quot;application/json&quot;)
+    private ResponseEntity&lt;MutantValidateResponse&gt; validateMutant(@RequestBody MutantValidateRequest dna){
+<span class="fc" id="L41">        return mutantService.validateMutant(dna.getDna());</span>
+    }
+
+    /**
+     * Servicio Rest para consultar el porcentaje de mutantes sobre humanos
+     * @return El servicio responde un código http 200 si la consulta fue exitosa y
+     * 500 si existe algún problema con la consulta en la base de datos
+     */
+    @ApiOperation(value = &quot;Servicio para consultar las estadisticas de las verificaciones de ADN&quot;)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = &quot;Consulta exitosa de las estadisticas&quot;),
+            @ApiResponse(code = 503, message = &quot;Error de conexión con la base de datos&quot;)
+    })
+    @GetMapping(value = &quot;${mutant.stats.url}&quot;, produces = &quot;application/json&quot;)
+    private ResponseEntity&lt;MutantStatResponse&gt; mutantStae(){
+<span class="fc" id="L56">        return mutantService.mutantStat();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

@@ -1,0 +1,8 @@
+co.com.meli.mutant.mutantapi
+co.com.meli.mutant.mutantapi.config
+co.com.meli.mutant.mutantapi.controller
+co.com.meli.mutant.mutantapi.payload
+co.com.meli.mutant.mutantapi.repository
+co.com.meli.mutant.mutantapi.repository.dto
+co.com.meli.mutant.mutantapi.service
+co.com.meli.mutant.mutantapi.service.implementation

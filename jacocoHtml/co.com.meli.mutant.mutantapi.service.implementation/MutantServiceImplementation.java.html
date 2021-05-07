@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MutantServiceImplementation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">mutant-api</a> &gt; <a href="index.source.html" class="el_package">co.com.meli.mutant.mutantapi.service.implementation</a> &gt; <span class="el_source">MutantServiceImplementation.java</span></div><h1>MutantServiceImplementation.java</h1><pre class="source lang-java linenums">package co.com.meli.mutant.mutantapi.service.implementation;
+
+import co.com.meli.mutant.mutantapi.payload.MutantStatResponse;
+import co.com.meli.mutant.mutantapi.payload.MutantValidateResponse;
+import co.com.meli.mutant.mutantapi.service.DataBaseService;
+import co.com.meli.mutant.mutantapi.service.MutantService;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+/**
+ * Implementación de los servicios para la validación de un mutante
+ */
+@Service
+<span class="fc" id="L21">public class MutantServiceImplementation implements MutantService {</span>
+
+    @Value(&quot;${mutant.caracteres.validos}&quot;)
+    private String caracteresValidosAdn;
+
+    @Autowired
+    private MutantLogic mutantLogic;
+
+    @Autowired
+    DataBaseService dataBaseService;
+
+<span class="fc" id="L32">    Logger logger = LoggerFactory.getLogger(MutantServiceImplementation.class);</span>
+
+    /**
+     * Servicio Rest para validar si una cadena de ADN es de un mutante o un humano
+     * @param dna Lista de caracteres de ADN que se va a validar.
+     * @return El servicio responde un código http 200 si la cadena de ADN corresponde a un mutante
+     * Responde un código http 403 si la cadena no corresponde a un mutante y
+     * Responde 400 si existe error en la estructura enviada
+     */
+    @Override
+    public ResponseEntity&lt;MutantValidateResponse&gt; validateMutant(String[] dna) {
+<span class="fc" id="L43">        logger.info(&quot;Inicio de la validación del mensaje&quot;);</span>
+
+        //Validar trama y tamaño
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (!validateData(dna)) {</span>
+<span class="fc" id="L47">            logger.info(&quot;Cadena DNA invalida&quot;);</span>
+<span class="fc" id="L48">            return new ResponseEntity&lt;&gt;(new MutantValidateResponse(&quot;Cadena DNA invalida&quot;), HttpStatus.BAD_REQUEST);</span>
+        }
+        //Validamos si el dna es de un mutante
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        if (mutantLogic.isMutant(dna)) {</span>
+<span class="fc" id="L52">            dataBaseService.saveAdn(dna, true);</span>
+<span class="fc" id="L53">            return new ResponseEntity&lt;&gt;(new MutantValidateResponse(&quot;Mutant&quot;), HttpStatus.OK);</span>
+        } else {
+<span class="fc" id="L55">            dataBaseService.saveAdn(dna, false);</span>
+<span class="fc" id="L56">            return new ResponseEntity&lt;&gt;(new MutantValidateResponse(&quot;No Mutant&quot;), HttpStatus.FORBIDDEN);</span>
+        }
+
+    }
+
+    /**
+     * Servicio Rest para consultar el porcentaje de mutantes sobre humanos
+     * Si la cantidad de humanos es 0 se toma como el ratio la cantidad de mutantes
+     * @return El servicio responde un código http 200 si la consulta fue exitosa y
+     * 500 si existe algún problema con la consulta en la base de datos
+     */
+    @Override
+    public ResponseEntity&lt;MutantStatResponse&gt; mutantStat() {
+<span class="fc" id="L69">        MutantStatResponse mutantStatResponse = dataBaseService.percentage();</span>
+
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">        if(mutantStatResponse != null)</span>
+<span class="fc" id="L72">            return new ResponseEntity&lt;&gt;(dataBaseService.percentage(), HttpStatus.OK);</span>
+
+<span class="nc" id="L74">        return new ResponseEntity&lt;&gt;(new MutantStatResponse(), HttpStatus.SERVICE_UNAVAILABLE);</span>
+    }
+
+    /**
+     * Función para validar que la cadena de ADN cumpla con los parámetros de tamaño y de caracteres permitidos
+     * La cantidad de caracteres que tiene cada cadena de caracteres debe ser del mismo tamaño de la lista de cadenas
+     * @param dna @param dna Lista de caracteres de ADN que se va a validar.
+     * @return Retorna true si la cadena de caracteres es valida y falso sino cumple las reglas
+     */
+    private boolean validateData(String[] dna) {
+<span class="fc" id="L84">        boolean res = true;</span>
+<span class="fc bfc" id="L85" title="All 4 branches covered.">        for (int cont = 0; cont &lt; dna.length &amp;&amp; res; cont++) {</span>
+<span class="fc bfc" id="L86" title="All 4 branches covered.">            res = (dna[cont].matches(&quot;[&quot; + caracteresValidosAdn + &quot;]{&quot; + dna[cont].length() + &quot;}&quot;) &amp;&amp; dna[cont].length() == dna.length);</span>
+        }
+
+<span class="fc" id="L89">        return res;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
